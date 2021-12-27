@@ -120,6 +120,8 @@
     
  ![image](https://user-images.githubusercontent.com/41152743/147337201-c2044695-2ebe-4872-b595-a5a2382db138.png)
     
-        1. Serial收集器
+        1. Serial收集器：单线程，客户端模式下的虚拟机
     
 ![image](https://user-images.githubusercontent.com/41152743/147337305-5f17e0e1-2e0e-46fa-a1b8-23cd7066cc78.png)
+    
+        2. ParNew收集器
