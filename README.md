@@ -120,8 +120,21 @@
     
  ![image](https://user-images.githubusercontent.com/41152743/147337201-c2044695-2ebe-4872-b595-a5a2382db138.png)
     
-        1. Serial收集器：单线程，客户端模式下的虚拟机
+        1. Serial收集器：新生代收集器，单线程，客户端模式下的虚拟机
     
 ![image](https://user-images.githubusercontent.com/41152743/147337305-5f17e0e1-2e0e-46fa-a1b8-23cd7066cc78.png)
     
-        2. ParNew收集器
+        2. ParNew收集器：新生代收集器，服务端模式下的HotSpot虚拟机，Serial收集器的多线程并行版本，除了Serial收集器外，目前只有它能与CMS收集器配合。
+            JDK 9以后，取消了-XX：+UseParNewGC参数，ParNew和CMS从此只能互相搭配使用，可以说ParNew合并入CMS
+![image](https://user-images.githubusercontent.com/41152743/147619691-9940a006-194d-4860-87f5-9939225b53c5.png)
+        
+        3. Parallel Scavenge收集器：新生代收集器，基于标记-复制算法，并行收集的多线程收集器
+            目标：达到一个可控制的吞吐量，吞吐量=(运行用户代码时间)/(运行用户代码时间+运行垃圾收集时间)；
+            -XX：MaxGCPauseMillis：尽力保证内存回收花费的时间不超过用户设定值，是以牺牲吞吐量和新生代空间为代价换取的。
+            -XX：GCTimeRatio：垃圾收集时间占总时间的比率，相当于吞吐量的倒数。
+            -XX：+UseAdaptiveSizePolicy，激活该参数，就不需要新生代的大小（-Xmn）、Eden与Survivor区的比例（-XX：SurvivorRatio）、晋升老年代对象大小（-XX：PretenureSizeThreshold)，                   根据当前系统的运行情况动态调整这些参数以提供最合适的停顿时间和最大的吞吐量
+    
+    
+    
+    
+    
