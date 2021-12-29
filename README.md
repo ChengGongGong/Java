@@ -121,6 +121,10 @@
  ![image](https://user-images.githubusercontent.com/41152743/147337201-c2044695-2ebe-4872-b595-a5a2382db138.png)
     
         1. Serial收集器：新生代收集器，单线程，客户端模式下的虚拟机
+           Serial Old收集器：Serial收集器的老年代版本，单线程，使用标记-整理算法，客户端模式下的HotSpot虚拟机
+            如果在服务端模式下用途：
+                1. JDK 5以及之前的版本中与Parallel Scavenge收集器搭配使用；
+                2. 作为CMS收集器发生失败时的后备预案，在并发收集发生Concurrent Mode Failure时使用。
     
 ![image](https://user-images.githubusercontent.com/41152743/147337305-5f17e0e1-2e0e-46fa-a1b8-23cd7066cc78.png)
     
@@ -133,7 +137,16 @@
             -XX：MaxGCPauseMillis：尽力保证内存回收花费的时间不超过用户设定值，是以牺牲吞吐量和新生代空间为代价换取的。
             -XX：GCTimeRatio：垃圾收集时间占总时间的比率，相当于吞吐量的倒数。
             -XX：+UseAdaptiveSizePolicy，激活该参数，就不需要新生代的大小（-Xmn）、Eden与Survivor区的比例（-XX：SurvivorRatio）、晋升老年代对象大小（-XX：PretenureSizeThreshold)，                   根据当前系统的运行情况动态调整这些参数以提供最合适的停顿时间和最大的吞吐量
-    
+            
+            Parallel Old收集器：Parallel Scavenge收集器的老年代版本，多线程并发收集，基于标记整理算法，JDK 1.6提供  
+![image](https://user-images.githubusercontent.com/41152743/147621440-8c279a14-b953-49cb-9d72-4f765b062f30.png)
+        
+        4. CMS收集器：获取最短回收停顿时间为目标的收集器，基于标记-清除算法，四个步骤：
+            1. 初始标记：需要“Stop The World”，仅仅只是标记一下GCRoots能直接关联到的对象，速度很快
+            2. 并发标记：不需要“Stop The World”，从GC Roots的直接关联对象开始遍历整个对象图的过程，耗时较长
+            3. 重新标记：需要“Stop The World”，为了修正并发标记期间，因用户程序继续运作而导致标记产生变动的那一部分对象的标记记录，比初始标记稍长，并发标记短
+            4. 并发清除：清理删除掉标记阶段判断的已经死亡的对象，并发进行
+            
     
     
     
