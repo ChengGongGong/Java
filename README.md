@@ -260,4 +260,34 @@
                 也可以使用jhat命令分析，如果文件较大可能需要加上-J-Xmx512m这种参数指定最大堆内存，即jhat -J-Xmx512m -port 9000 /tmp/dump.dat。然后就可以在浏览器中输入主机地址:9000查看。
             2. 也可以使用更轻量级的在线分析，jmap -histo:live pid，查看存活的对象。
   
-### 1. 内存泄露——纯代码层面的问题，完善代码来避免
+### 2. 内存溢出——程序的健壮性
+    程序在申请内存时，没有足够的内存空间供使用，出现java.lang.OutOfMemoryError.
+    
+    1. 产生原因：JVM内存过小、程序不严谨产生了过多的垃圾
+    
+        1. 内存中加载的数据量过大，如一次从数据库中取出过多数据；
+        2. 集合类中有对象的引用，使用完后未清空，使得JVM不能回收；
+        3. 代码中存在死循环或者循环产生过多重复的对象实体；
+        4. 使用第三方软件中的bug
+        5. 启动参数内存值设定的过小
+    2. 常见类型：
+        
+        1.java堆溢出：java.lang.OutOfMemoryError：Java heap space
+            解决方案：首先，通过内存映像分析工具对Dump出的堆转储快照进行分析，需要确认是出现了内存泄露还是内存溢出；
+                      然后，如果是内存泄露，则通过引用链信息定位到对象创建的位置，找出具体的代码位置；
+                            如果不是内存泄露，即内存中的对象必须是存活的，检查虚拟机的堆参数设置(-Xmx与-Xms)，与机器的内存对比看是否有向上调整的空间。
+        2. 虚拟机栈和本地方法栈溢出：java.lang.StackOverflowError，
+            1. StackOverflowError异常：线程请求的栈深度大于虚拟机所允许的最大深度，-Xss设置栈容量
+            2. OutOfMemoryError异常：如果虚拟机的栈内存允许动态扩展，当扩展栈容量无法申请到足够的内存时，抛出该异常.
+                HotSpot虚拟机不支持栈内存扩展，因此在创建线程申请内存时会因无法获得足够内存而出现OutOfMemoryError异常，在线程运行时不会因为扩展而导致内存溢出的。
+            解决方案：在不减少线程数量或更换64位虚拟机的情况下，只能通过减少最大堆和减少栈容量来换取更多的线程。
+        3. 方法区和运行时常量池溢出：java.lang.OutOfMemoryError：PermGen space
+            1. JDK 1.7 把永久代的字符串常量池加入java堆中，因此运行时常量池在JDK 7前抛出的是java.lang.OutOfMemoryError：PermGen space，受-XX:PermSize与-XX：MaxPermSize的限制
+            2. 方法区主要用于存放类型的相关信息，如类名、访问修饰符、字段描述、方法描述等，在经常运行时生成大量动态类的应用场景时需注意其回收情况；
+                JDK 8 废弃了永久代，使用元空间来保存类型的相关信息，-XX:MetaspaceSize、-XX：MaxMetaspaceSize
+        4. 本机直接内存溢出：java.lang.OutOfMemoryError
+            1. 直接内存的容量大小可通过-XX：MaxDirectMemorySize参数指定，如果不去指定默认与java堆最大值一致。
+            2. 明显的特征是Heap Dump文件中没有什么明显的异常情况，且发生内存溢出后产生的Dump文件很小，而程序又直接或间接使用了DirectMemory。
+    
+    
+    
